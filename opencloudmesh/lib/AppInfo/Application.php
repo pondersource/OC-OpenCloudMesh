@@ -48,6 +48,7 @@ class Application extends App {
 
 		$container = $this->getContainer();
 		$server = $container->getServer();
+		$serverContainer = $container->query("ServerContainer");
 
 		$container->registerService('OCA\\OpenCloudMesh\\GroupExternalManager', function (SimpleContainer $c) use ($server) {
 			$user = $server->getUserSession()->getUser();
@@ -59,6 +60,32 @@ class Application extends App {
 				$server->getNotificationManager(),
 				$server->getEventDispatcher(),
 				$uid
+			);
+		});
+		error_log("================");
+		error_log("register GroupNotifications globally");
+		error_log("===============");
+		
+		$serverContainer->registerService('GroupNotifications', function (SimpleContainer $c) use ($server) {
+			$addressHandler = new AddressHandler(
+				\OC::$server->getURLGenerator(),
+				\OC::$server->getL10N('federatedfilesharing')
+			);
+			$discoveryManager = new DiscoveryManager(
+				\OC::$server->getMemCacheFactory(),
+				\OC::$server->getHTTPClientService()
+			);
+			$permissions = new Permissions();
+			$notificationManager = new NotificationManager(
+				$permissions
+			);
+			return new GroupNotifications(
+				$addressHandler,
+				\OC::$server->getHTTPClientService(),
+				$discoveryManager,
+				$notificationManager,
+				\OC::$server->getJobList(),
+				\OC::$server->getConfig()
 			);
 		});
 
