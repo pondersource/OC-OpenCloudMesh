@@ -192,26 +192,26 @@ abstract class AbstractManager {
 			}
 
 
-			// $group = $this->groupManager->get($user);
-			// $groupUsers = $group->getUsers();
+			$group = $this->groupManager->get($user);
+			$groupUsers = $group->getUsers();
 
-			// if ($globalAutoAcceptValue === 'yes') {
-			// 	foreach ($groupUsers as $groupUser) {
-			// 		$user = $groupUser->getUserName();
-			// 		$shareFolder = Helper::getShareFolder();
-			// 		$mountPoint = Files::buildNotExistingFileName($shareFolder, $name);
-			// 		$mountPoint = Filesystem::normalizePath($mountPoint);
-			// 		$hash = \md5($mountPoint);
+			if ($globalAutoAcceptValue === 'yes') {
+				foreach ($groupUsers as $groupUser) {
+					$user = $groupUser->getUserName();
+					$shareFolder = Helper::getShareFolder();
+					$mountPoint = Files::buildNotExistingFileName($shareFolder, $name);
+					$mountPoint = Filesystem::normalizePath($mountPoint);
+					$hash = \md5($mountPoint);
 		
-			// 		$query = $this->connection->prepare("
-			// 				INSERT INTO `*PREFIX*{$this->tableName}`
-			// 					(`remote`, `share_token`, `password`, `name`, `owner`, `user`, `mountpoint`, `mountpoint_hash`, `accepted`, `remote_id`)
-			// 				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			// 			");
-			// 		$query->execute([$remote, $token, $password, $name, $owner, $user, $mountPoint, $hash, 1, $remoteId]);
+					$query = $this->connection->prepare("
+							INSERT INTO `*PREFIX*{$this->tableName}`
+								(`remote`, `share_token`, `password`, `name`, `owner`, `user`, `mountpoint`, `mountpoint_hash`, `accepted`, `remote_id`)
+							VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+						");
+					$query->execute([$remote, $token, $password, $name, $owner, $user, $mountPoint, $hash, 1, $remoteId]);
 		
-			// 	}
-			// }
+				}
+			}
 		
 			return null;
 		}
