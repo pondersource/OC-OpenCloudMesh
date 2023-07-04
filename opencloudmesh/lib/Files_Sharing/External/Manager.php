@@ -35,6 +35,7 @@ namespace OCA\OpenCloudMesh\Files_Sharing\External;
 
 use OCP\Notification\IManager;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use OCP\IConfig;
 
 class Manager extends AbstractManager {
 	public const STORAGE = '\OCA\OpenCloudMesh\Files_Sharing\External\Storage';
@@ -57,6 +58,7 @@ class Manager extends AbstractManager {
 		EventDispatcherInterface $eventDispatcher,
 		\OCP\IUserManager $userManager,
 		\OCP\IGroupManager $groupManager,
+		IConfig $config,
 		$uid = null
 	) {
 		parent::__construct(
@@ -69,7 +71,9 @@ class Manager extends AbstractManager {
 			$eventDispatcher,
 			$userManager,
 			$groupManager,
-			$uid);
+			$config,
+			$uid,
+		);
 	}
 
 	protected function prepareData(array &$data) {

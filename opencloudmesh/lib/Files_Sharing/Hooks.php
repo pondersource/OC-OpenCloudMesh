@@ -55,6 +55,7 @@ class Hooks {
 			\OC::$server->getEventDispatcher(),
 			\OC::$server->getUserManager(),
 			\OC::$server->getGroupManager(),
+			\OC::$server->getConfig(),
 			null
 		);
 	}

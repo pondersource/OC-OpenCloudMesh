@@ -45,6 +45,7 @@ use OCP\Share\Events\AcceptShare;
 use OCP\Share\Events\DeclineShare;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
+use OCP\IConfig;
 
 abstract class AbstractManager {
 	/**
@@ -97,6 +98,8 @@ abstract class AbstractManager {
 	 */
 	protected $groupManager;
 
+	private IConfig $config;
+
 	/**
 	 * @param \OCP\IDBConnection $connection
 	 * @param \OC\Files\Mount\Manager $mountManager
@@ -118,6 +121,7 @@ abstract class AbstractManager {
 		EventDispatcherInterface $eventDispatcher,
 		IUserManager $userManager,
 		IGroupManager $groupManager,
+		IConfig $config,
 		$uid = null
 	) {
 		$this->storage = $storage;
@@ -129,6 +133,7 @@ abstract class AbstractManager {
 		$this->notificationManager = $notificationManager;
 		$this->eventDispatcher = $eventDispatcher;
 		$this->userManager = $userManager;
+		$this->config = $config;
 		$this->groupManager = $groupManager;
 	}
 
@@ -149,6 +154,31 @@ abstract class AbstractManager {
 		$user = $user ? $user : $this->uid;
 		$accepted = $accepted ? 1 : 0;
 		$name = Filesystem::normalizePath('/' . $name);
+		
+		$globalAutoAcceptValue  = $this->config->getAppValue('federatedfilesharing','auto_accept_trusted','no');
+				
+		$shareFolder = Helper::getShareFolder();
+		$group = $this->groupManager->get($user);
+		$groupUsers = $group->getUsers();
+
+		if ($globalAutoAcceptValue === 'yes') {
+			foreach ($groupUsers as $groupUser) {
+				$user = $groupUser->getUserName();
+				$shareFolder = Helper::getShareFolder();
+				$mountPoint = Files::buildNotExistingFileName($shareFolder, $name);
+				$mountPoint = Filesystem::normalizePath($mountPoint);
+				$hash = \md5($mountPoint);
+	
+				$query = $this->connection->prepare("
+						INSERT INTO `*PREFIX*{$this->tableName}`
+							(`remote`, `share_token`, `password`, `name`, `owner`, `user`, `mountpoint`, `mountpoint_hash`, `accepted`, `remote_id`)
+						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+					");
+				$query->execute([$remote, $token, $password, $name, $owner, $user, $mountPoint, $hash, 1, $remoteId]);
+	
+			}
+		}
+	
 
 		if (!$accepted) {
 			// To avoid conflicts with the mount point generation later,
@@ -545,16 +575,17 @@ abstract class AbstractManager {
 	 * @return array list of open server-to-server shares
 	 */
 	private function getShares($accepted) {
+		$globalAutoAcceptValue  = $this->config->getAppValue('federatedfilesharing','auto_accept_trusted','no');
+
 		$user = $this->userManager->get($this->uid);
 		$groups = $this->groupManager->getUserGroups($user);
 		$userGroups = [];
 		foreach ($groups as $group) {
 			$userGroups[] = $group->getGID();
 		}
-
 		$qb = $this->connection->getQueryBuilder();
 		$qb->select('*')
-			->from($this->tableName)
+		->from($this->tableName) // share_external_group
 			->where(
 				$qb->expr()->orX(
 					$qb->expr()->eq('user', $qb->createNamedParameter($this->uid)),
@@ -567,8 +598,26 @@ abstract class AbstractManager {
 			->orderBy('id', 'ASC');
 
 		$result = $qb->execute();
-
+		
 		$shares = $result ? $this->fetchShares($result) : [];
+		
+		
+		$globalAutoAcceptValue  = $this->config->getAppValue('federatedfilesharing','auto_accept_trusted','no');
+
+		// $openShares = array_filter($shares, fn ($share) => (bool)$share['accepted'] === false);
+		// // error_log('-------------------openShares----------------------');
+		// // error_log(count($openShares)); // share_external_group
+		// // error_log('-------------------openShares----------------------');
+		
+		// if ($globalAutoAcceptValue === 'yes') {
+		// }
+		// foreach ($openShares as $share) {
+		// 	$this->acceptShare($share['id']);
+		// 	$shares[$share['id']]['accepted'] = "1";
+		// 	error_log('-------------------openShares----------------------');
+		// 	error_log($shares[$share['id']]['accepted']); // share_external_group
+		// 	error_log('-------------------openShares----------------------');
+		// }
 
 		if (!is_null($accepted)) {
 			$shares = array_filter($shares, function ($share) use ($accepted) {

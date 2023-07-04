@@ -75,6 +75,7 @@ class Application extends App {
 				$server->getEventDispatcher(),
 				$server->getUserManager(),
 				$server->getGroupManager(),
+				$server->getConfig(),
 				$uid
 			);
 		});
