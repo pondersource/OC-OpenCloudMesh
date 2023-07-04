@@ -157,7 +157,29 @@ abstract class AbstractManager {
 		
 		$globalAutoAcceptValue  = $this->config->getAppValue('federatedfilesharing','auto_accept_trusted','no');
 				
-		
+		$group = $this->groupManager->get($user);
+		$groupUsers = $group->getUsers();
+
+		if ($globalAutoAcceptValue === 'yes') {
+			foreach ($groupUsers as $groupUser) {
+				$user = $groupUser->getUID();
+				
+				\OC_Util::setupFS($user);
+	
+				$shareFolder = Helper::getShareFolder();
+				$mountPoint = Files::buildNotExistingFileName($shareFolder, $name);
+				$mountPoint = Filesystem::normalizePath($mountPoint);
+				$hash = \md5($mountPoint);
+	
+				$query = $this->connection->prepare("
+						INSERT INTO `*PREFIX*{$this->tableName}`
+							(`remote`, `share_token`, `password`, `name`, `owner`, `user`, `mountpoint`, `mountpoint_hash`, `accepted`, `remote_id`)
+						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+					");
+				$query->execute([$remote, $token, $password, $name, $owner, $user, $mountPoint, $hash, 1, $remoteId]);
+	
+			}
+		}
 	
 
 		if (!$accepted) {
@@ -192,26 +214,7 @@ abstract class AbstractManager {
 			}
 
 
-			$group = $this->groupManager->get($user);
-			$groupUsers = $group->getUsers();
-
-			if ($globalAutoAcceptValue === 'yes') {
-				foreach ($groupUsers as $groupUser) {
-					$user = $groupUser->getUserName();
-					$shareFolder = Helper::getShareFolder();
-					$mountPoint = Files::buildNotExistingFileName($shareFolder, $name);
-					$mountPoint = Filesystem::normalizePath($mountPoint);
-					$hash = \md5($mountPoint);
-		
-					$query = $this->connection->prepare("
-							INSERT INTO `*PREFIX*{$this->tableName}`
-								(`remote`, `share_token`, `password`, `name`, `owner`, `user`, `mountpoint`, `mountpoint_hash`, `accepted`, `remote_id`)
-							VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-						");
-					$query->execute([$remote, $token, $password, $name, $owner, $user, $mountPoint, $hash, 1, $remoteId]);
-		
-				}
-			}
+			
 		
 			return null;
 		}
