@@ -215,11 +215,23 @@ class Application extends App {
 
 	private function registerHooks($container, $server) {
 		$container->registerService('UserHooks', function($c) use($server) {
+			$user = $server->getUserSession()->getUser();
+			$uid = $user ? $user->getUID() : null;
             return new UserHooks(
+				$server->getConfig(),
                 $c->query('ServerContainer')->getUserSession(),
-                $c->query('ServerContainer')->getUserManager(),
-                $c->query('ServerContainer')->getGroupManager(),
-				$server->getConfig()
+				$c->query('ServerContainer')->getUserManager(),
+				$c->query('ServerContainer')->getGroupManager(),
+				new \OCA\OpenCloudMesh\Files_Sharing\External\Manager(
+					$server->getDatabaseConnection(),
+					\OC\Files\Filesystem::getMountManager(),
+					\OC\Files\Filesystem::getLoader(),
+					$server->getNotificationManager(),
+					$server->getEventDispatcher(),
+					$server->getUserManager(),
+					$server->getGroupManager(),
+					$uid
+				)
             );
         });
 	}
