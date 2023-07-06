@@ -48,6 +48,7 @@ use OCA\OpenCloudMesh\Controller\OcmController;
 use OCA\OpenCloudMesh\Files_Sharing\Hooks;
 use OCA\OpenCloudMesh\Files_Sharing\Middleware\RemoteOcsMiddleware;
 use OCA\OpenCloudMesh\ShareProviderFactory;
+use OCA\OpenCloudMesh\Hooks\UserHooks;
 
 class Application extends App {
 	private $isProviderRegistered = false;
@@ -113,9 +114,7 @@ class Application extends App {
 			);
 		});
 
-		$container->registerService(
-			'OCA\\OpenCloudMesh\\FederatedFileSharing\\FedGroupShareManager',
-			function ($c) use ($server) {
+		$container->registerService('OCA\\OpenCloudMesh\\FederatedFileSharing\\FedGroupShareManager', function ($c) use ($server) {
 				$config = \OC::$server->getConfig();
 
 				$addressHandler = new AddressHandler(
@@ -210,8 +209,20 @@ class Application extends App {
 				$c->getServer()->getEventDispatcher()
 			);
 		});
+
+		$this->registerHooks($container, $server);
 	}
 
+	private function registerHooks($container, $server) {
+		$container->registerService('UserHooks', function($c) use($server) {
+            return new UserHooks(
+                $c->query('ServerContainer')->getUserSession(),
+                $c->query('ServerContainer')->getUserManager(),
+                $c->query('ServerContainer')->getGroupManager(),
+				$server->getConfig()
+            );
+        });
+	}
 	/**
 	 * get instance of federated group share provider
 	 *
@@ -342,5 +353,6 @@ class Application extends App {
 
 	public function registerEvents() {
 		$this->getContainer()->query('Hooks')->registerListeners();
+		$this->getContainer()->query('UserHooks')->register();
 	}
 } 
