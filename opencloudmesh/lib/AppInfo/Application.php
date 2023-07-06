@@ -231,7 +231,8 @@ class Application extends App {
 					$server->getUserManager(),
 					$server->getGroupManager(),
 					$uid
-				)
+				),
+				$server->getDatabaseConnection(),
             );
         });
 	}
