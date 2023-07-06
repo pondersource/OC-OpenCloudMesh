@@ -193,22 +193,19 @@ abstract class AbstractManager {
 				$data['mountpoint_hash'] = \md5($data['mountpoint']);
 				$i++;
 			}
+
+			// $this->connection->lastIn;
 			
 			foreach ($groupUsers as $groupUser) {
 				$user = $groupUser->getUID();
-				
+
+				$tmpMountPointName = '{{TemporaryMountPointName#' . $name . '}}';
+				$mountPoint = $tmpMountPointName;
+
 				// \OC_Util::setupFS($user);
 				// $shareFolder = Helper::getShareFolder();
 				// $mountPoint = Files::buildNotExistingFileName($shareFolder, $name);
 				// $mountPoint = Filesystem::normalizePath($mountPoint);
-
-				// $tmpMountPointName = '{{TemporaryMountPointName#' . $name . '}}';
-				// $mountPoint = $tmpMountPointName;
-
-				\OC_Util::setupFS($user);
-				$shareFolder = Helper::getShareFolder();
-				$mountPoint = Files::buildNotExistingFileName($shareFolder, $name);
-				$mountPoint = Filesystem::normalizePath($mountPoint);
 		
 	
 				$hash = \md5($mountPoint);
