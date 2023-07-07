@@ -602,9 +602,9 @@ abstract class AbstractManager
 
 	public function acceptRemoteGroupShares($groupId, $userId)
 	{
-		$getGroupSharesStmt = $this->connection->prepare("SELECT * FROM  `*PREFIX*share_external_group` WHERE `user` = ?");
+		$getGroupSharesStmt = $this->connection->prepare("SELECT * FROM  `*PREFIX*{$this->tableName}` WHERE `user` = ?");
 
-		$getUserSharesStmt = $this->connection->prepare("SELECT * FROM  `*PREFIX*share_external_group` WHERE `user` = ?");
+		$getUserSharesStmt = $this->connection->prepare("SELECT * FROM  `*PREFIX*{$this->tableName}` WHERE `user` = ?");
 
 		$groupShares = $getGroupSharesStmt->execute([$groupId]) ? $getGroupSharesStmt->fetchAll() : [];
 		$userShares = $getUserSharesStmt->execute([$userId]) ? $getUserSharesStmt->fetchAll() : [];
@@ -625,7 +625,7 @@ abstract class AbstractManager
 			$mountpoint_hash = \md5($mountPoint);
 
 			$query = $this->connection->prepare("
-                            INSERT INTO oc_share_external_group
+                            INSERT INTO `*PREFIX*{$this->tableName}`
                             (`parent`, `remote`,`remote_id`, `share_token`, `password`, `name`, `owner`, `user`, `mountpoint`, `mountpoint_hash`, `accepted`)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ");

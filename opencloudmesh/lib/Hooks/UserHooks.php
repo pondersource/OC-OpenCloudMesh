@@ -6,7 +6,6 @@ use OCP\IGroupManager;
 use OCP\IUserSession;
 use OCP\IUserManager;
 use OCP\IConfig;
-use OCP\IDBConnection;
 use OCA\OpenCloudMesh\Files_Sharing\External\Manager;
 
 class UserHooks
@@ -16,22 +15,19 @@ class UserHooks
     private IUserManager $userManager;
     private IGroupManager $groupManager;
     private Manager $externalManager;
-    protected IDBConnection $connection;
 
     public function __construct(
         IConfig $config,
         IUserSession $userSession,
         IUserManager $userManager,
         IGroupManager $groupManager,
-        Manager $externalManager,
-        IDBConnection $connection
+        Manager $externalManager
     ) {
         $this->config = $config;
         $this->userSession = $userSession;
         $this->userManager = $userManager;
         $this->groupManager = $groupManager;
         $this->externalManager = $externalManager;
-        $this->connection = $connection;
     }
 
     public function register()
@@ -48,7 +44,7 @@ class UserHooks
 
                 foreach ($userGroups as $group) {
                     $groupId = $group->getGID();
-                    
+
                     $this->externalManager->acceptRemoteGroupShares($groupId, $userId);
                 }
             });
