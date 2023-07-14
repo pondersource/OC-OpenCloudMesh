@@ -48,7 +48,8 @@ use OCP\Files\StorageNotAvailableException;
  *
  * @package OCA\OpenCloudMesh\Files_Sharing\External\BackgroundJob
  */
-class ScanExternalSharesJob extends TimedJob {
+class ScanExternalSharesJob extends TimedJob
+{
 	/** @var IDBConnection */
 	private $connection;
 	/** @var Manager */
@@ -60,8 +61,8 @@ class ScanExternalSharesJob extends TimedJob {
 	/** @var ILogger */
 	private $logger;
 
-	public const DEFAULT_MIN_LAST_SCAN = 3*60*60;
-	public const DEFAULT_MIN_LOGIN = 24*60*60;
+	public const DEFAULT_MIN_LAST_SCAN = 3 * 60 * 60;
+	public const DEFAULT_MIN_LOGIN = 24 * 60 * 60;
 	public const DEFAULT_SHARES_PER_SESSION = 100;
 	public const BATCH_SIZE = 10;
 
@@ -86,7 +87,8 @@ class ScanExternalSharesJob extends TimedJob {
 		}
 	}
 
-	protected function fixDIForJobs() {
+	protected function fixDIForJobs()
+	{
 		$this->connection = \OC::$server->getDatabaseConnection();
 		$this->config = \OC::$server->getConfig();
 		$this->userManager = \OC::$server->getUserManager();
@@ -107,7 +109,8 @@ class ScanExternalSharesJob extends TimedJob {
 	 * @param $argument
 	 * @throws \Exception
 	 */
-	protected function run($argument) {
+	protected function run($argument)
+	{
 		$enabled = $this->config->getAppValue('files_sharing', 'cronjob_scan_external_enabled', 'no');
 		if ($enabled !== 'yes') {
 			$this->logger->debug(
@@ -123,12 +126,15 @@ class ScanExternalSharesJob extends TimedJob {
 
 		$scannedShares = 0;
 
+		$i = 0;
 		do {
+			
 			$offset = $this->config->getAppValue('files_sharing', 'cronjob_scan_external_offset', 0);
 			$shares = $this->getAcceptedShares($batchPerSession, $offset);
 
 			$searchedBatch = 0;
 			foreach ($shares as $share) {
+				$i++;
 				if ($this->shouldScan($share, $lastLoginThreshold, $lastScanThreshold)) {
 					// make sure not to scan this share again within [cronjob_scan_external_min_scan]
 					$this->updateLastScanned($share['id'], \time());
@@ -154,9 +160,12 @@ class ScanExternalSharesJob extends TimedJob {
 
 			$this->config->setAppValue('files_sharing', 'cronjob_scan_external_offset', $offset);
 		} while ($offset !== 0 && $scannedShares < $maxSharesPerSession);
+
+		error_log("-------------this is value of i" . $i);
 	}
 
-	protected function shouldScan($share, $lastLoginThreshold, $lastScanThreshold) {
+	protected function shouldScan($share, $lastLoginThreshold, $lastScanThreshold)
+	{
 		$now = \time();
 
 		// check last login
@@ -187,14 +196,15 @@ class ScanExternalSharesJob extends TimedJob {
 		return true;
 	}
 
-	protected function scan($share) {
+	protected function scan($share)
+	{
 		// get mount
 		$options = [
-			'remote'	=> $share['remote'],
-			'token'		=> $share['share_token'],
-			'password'	=> $share['password'],
-			'mountpoint'	=> $share['mountpoint'],
-			'owner'		=> $share['owner']
+			'remote' => $share['remote'],
+			'token' => $share['share_token'],
+			'password' => $share['password'],
+			'mountpoint' => $share['mountpoint'],
+			'owner' => $share['owner']
 		];
 
 		try {
@@ -250,11 +260,13 @@ class ScanExternalSharesJob extends TimedJob {
 		return true;
 	}
 
-	protected function tearDownStorage() {
+	protected function tearDownStorage()
+	{
 		\OC_Util::tearDownFS();
 	}
 
-	protected function getAcceptedShares($limit, $offset) {
+	protected function getAcceptedShares($limit, $offset)
+	{
 		$qb = $this->connection->getQueryBuilder();
 		$qb->select('*')
 			->from('share_external_group')
@@ -268,7 +280,8 @@ class ScanExternalSharesJob extends TimedJob {
 		return $cursor->fetchAll();
 	}
 
-	protected function updateLastScanned($id, $updatedTime) {
+	protected function updateLastScanned($id, $updatedTime)
+	{
 		$qb = $this->connection->getQueryBuilder();
 		$qb->update('share_external_group')
 			->set('lastscan', $qb->createNamedParameter($updatedTime))
