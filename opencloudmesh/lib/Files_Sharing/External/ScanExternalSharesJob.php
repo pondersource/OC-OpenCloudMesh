@@ -126,7 +126,6 @@ class ScanExternalSharesJob extends TimedJob
 
 		$scannedShares = 0;
 
-		$i = 0;
 		do {
 			
 			$offset = $this->config->getAppValue('files_sharing', 'cronjob_scan_external_offset', 0);
@@ -134,7 +133,6 @@ class ScanExternalSharesJob extends TimedJob
 
 			$searchedBatch = 0;
 			foreach ($shares as $share) {
-				$i++;
 				if ($this->shouldScan($share, $lastLoginThreshold, $lastScanThreshold)) {
 					// make sure not to scan this share again within [cronjob_scan_external_min_scan]
 					$this->updateLastScanned($share['id'], \time());
@@ -160,8 +158,6 @@ class ScanExternalSharesJob extends TimedJob
 
 			$this->config->setAppValue('files_sharing', 'cronjob_scan_external_offset', $offset);
 		} while ($offset !== 0 && $scannedShares < $maxSharesPerSession);
-
-		error_log("-------------this is value of i" . $i);
 	}
 
 	protected function shouldScan($share, $lastLoginThreshold, $lastScanThreshold)
