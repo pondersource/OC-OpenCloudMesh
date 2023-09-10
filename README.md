@@ -32,13 +32,15 @@ To debug it, you can open https://github.com/pondersource/dev-stock
 on GitPod and run:
 
 * `./scripts/init-opencloudmesh.sh`
-* `./scripts/testing-opencloudmesh.sh`.
+* `./scripts/testing-ocm.sh`
 
 Then:
 * Open the browser-in-a-browser that will be started on port 5800
 * log in to https://oc2.docker as marie / radioactivity
-* create a group called 'scientists'
+* create a group called 'scientists' and add marie to it
 * log in to https://oc1.docker as einstein / relativity
-* create a *folder* and share it with scientists@oc2.docker (careful, sharing welcome.txt will not work!)
+* pick a *file* or *folder* and share it with scientists@oc2.docker
 * log in to https://oc2.docker as marie / radioactivity
 * accept the share from einstein
+
+Note that `./scripts/testing-ocm-nc-oc.sh` can be called instead of `./scripts/testing-ocm.sh` to test OCM shares between OwnCloud and NextCloud.
