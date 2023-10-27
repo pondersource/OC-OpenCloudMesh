@@ -88,7 +88,7 @@ abstract class AbstractFedShareManager {
 	/**
 	 * AbstractFedShareManager constructor.
 	 *
-	 * @param AbstractFederatedShareProvider $federatedShareProvider
+	 * @param $federatedShareProvider
 	 * @param AbstractNotifications $notifications
 	 * @param IUserManager $userManager
 	 * @param ActivityManager $activityManager
@@ -98,7 +98,7 @@ abstract class AbstractFedShareManager {
 	 * @param EventDispatcherInterface $eventDispatcher
 	 */
 	public function __construct(
-		AbstractFederatedShareProvider $federatedShareProvider,
+		$federatedShareProvider,
 		AbstractNotifications $notifications,
 		IUserManager $userManager,
 		ActivityManager $activityManager,
