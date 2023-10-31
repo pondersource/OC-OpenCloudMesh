@@ -47,7 +47,7 @@ class FedUserShareManager extends AbstractFedShareManager {
 	/**
 	 * FedShareManager constructor.
 	 *
-	 * @param FederatedUserShareProvider $federatedUserShareProvider
+	 * @param $federatedUserShareProvider
 	 * @param UserNotifications $notifications
 	 * @param IUserManager $userManager
 	 * @param ActivityManager $activityManager
@@ -57,7 +57,7 @@ class FedUserShareManager extends AbstractFedShareManager {
 	 * @param EventDispatcherInterface $eventDispatcher
 	 */
 	public function __construct(
-		FederatedUserShareProvider $federatedUserShareProvider,
+		$federatedUserShareProvider,
 		UserNotifications $notifications,
 		IUserManager $userManager,
 		ActivityManager $activityManager,
